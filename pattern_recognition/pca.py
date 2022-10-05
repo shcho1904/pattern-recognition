@@ -15,8 +15,9 @@ from sklearn.preprocessing import StandardScaler
 #load data from mnist
 (X_train, y_train), (X_test, y_test) = mnist.load_data()
 INF = 987654321.0
-test_case = 200
-train_num = 1000
+test_case = 1000
+train_num = 15000
+eig_num = 40
 
 #pull 20 samples for training
 X_train = X_train[0:train_num]
@@ -39,29 +40,33 @@ test = X_test.reshape(-1, 28*28)
 #get mean of training data
 A = StandardScaler().fit_transform(A)
 test = StandardScaler().fit_transform(test)
-
+A = A.T
+test = test.T
 
 #compute covariance matrix
-Cov_mat = A.T.dot(A)
+Cov_mat = np.matmul(A.T, A)
 
 #compute eigenvalues and eigenvectors
-values, vectors = eigh(Cov_mat)
-vectors = vectors.T
-new_vec = vectors.dot(A.T)
+values, vectors = eigh(Cov_mat, eigvals=(784-eig_num,783))
+new_vec = A.dot(vectors)
 
-#calculate weight per each eigenvector
-ohm_test = test.dot(new_vec)
-ohm_train = A.dot(new_vec)
+#calculate weight
+train_weight = new_vec.T.dot(A).T
+
+
+#test
+test_weight = new_vec.T.dot(test).T
 
 #calculate distance
 best_arr = []
+
 
 for i in range(X_test.shape[0]):
     best_error = INF
     best_idx = 0
     error = 0.0
     for j in range(X_train.shape[0]):
-        error = np.sum((ohm_test[i] - ohm_train[j])**2)
+        error = np.sum((test_weight[i] - train_weight[j])**2)
         if(best_error > error):
             best_error = error
             best_idx = y_train[j]
@@ -70,3 +75,6 @@ for i in range(X_test.shape[0]):
 num_correct = np.sum(y_test[0:test_case] == best_arr)
 accuracy = float(num_correct) / test_case
 print(accuracy*100)
+
+
+
