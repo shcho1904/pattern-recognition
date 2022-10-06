@@ -9,7 +9,6 @@ from keras.datasets import mnist
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.linalg import eigh
-import pandas as pd
 from sklearn.preprocessing import StandardScaler
 
 #load data from mnist
@@ -26,12 +25,11 @@ X_train = X_train[0:train_num]
 X_test = X_test[0:test_case]
 
 #show one of sample images
-'''
+
 image = X_train[4]
 fig = plt.figure()
 plt.imshow(image)
 plt.show()
-'''
 
 #flatten data
 A = X_train.reshape(-1, 28*28)
@@ -57,23 +55,26 @@ train_weight = new_vec.T.dot(A).T
 #test
 test_weight = new_vec.T.dot(test).T
 
-#calculate distance
 best_arr = []
-
 
 for i in range(X_test.shape[0]):
     best_error = INF
     best_idx = 0
     error = 0.0
     for j in range(X_train.shape[0]):
+        #calculate distance between test and train data
         error = np.sum((test_weight[i] - train_weight[j])**2)
         if(best_error > error):
+            #find best index has least error
             best_error = error
             best_idx = y_train[j]
     best_arr.append(best_idx)
 
+#calculate accuracy
 num_correct = np.sum(y_test[0:test_case] == best_arr)
 accuracy = float(num_correct) / test_case
+
+#print accuracy(%)
 print(accuracy*100)
 
 
